@@ -1,0 +1,350 @@
+@import "@fontsource/lexend/400.css";
+@import "@fontsource/lexend/500.css";
+@import "@fontsource/lexend/600.css";
+@import "@fontsource/lexend/700.css";
+@import "@fontsource/opendyslexic/400.css";
+@import "@fontsource/opendyslexic/700.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background-primary: 45 87% 94%;
+    --background-secondary: 45 55% 87%;
+    --surface: 45 100% 98%;
+    --surface-muted: 45 35% 89%;
+    --surface-interactive: 213 72% 59%;
+    --color-text-primary: 0 0% 23%;
+    --color-text-secondary: 0 0% 32%;
+    --color-text-muted: 0 0% 43%;
+    --color-focus: 213 72% 45%;
+    --background: var(--background-primary);
+    --foreground: var(--color-text-primary);
+
+    --card: var(--surface);
+    --card-foreground: 0 0% 23%;
+
+    --popover: 45 100% 98%;
+    --popover-foreground: 0 0% 23%;
+
+    --primary: 213 72% 59%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 270 41% 53%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: var(--surface-muted);
+    --muted-foreground: 0 0% 38%;
+
+    --accent: 270 41% 53%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 145 63% 42%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 45 100% 51%;
+    --warning-foreground: 0 0% 0%;
+    --info: 203 70% 39%;
+    --info-foreground: 0 0% 100%;
+
+    --cream: 45 87% 94%;
+    --cream-dark: 45 55% 87%;
+
+    --border: 45 32% 82%;
+    --input: 45 32% 78%;
+    --ring: 213 72% 59%;
+
+    --radius: 0.875rem;
+
+    --text-secondary: 0 0% 32%;
+    --text-muted: 0 0% 43%;
+    --surface-raised: 45 100% 99%;
+    --focus: var(--color-focus);
+    --disabled: 45 15% 76%;
+    --shadow-soft: 0 8px 24px hsl(30 20% 30% / 0.08);
+    --shadow-lifted: 0 14px 32px hsl(30 20% 30% / 0.12);
+
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+
+    --motion-fast: 150ms;
+    --motion-base: 250ms;
+    --motion-slow: 400ms;
+    --ease-gentle: cubic-bezier(0.22, 1, 0.36, 1);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --font-display: 'Lexend', 'Trebuchet MS', sans-serif;
+    --font-body: 'Lexend', 'Trebuchet MS', sans-serif;
+    --font-reading: var(--font-body);
+    --font-heading: var(--font-display);
+    --font-ui: var(--font-body);
+    --leading-body: 1.6;
+    --leading-reading: 1.7;
+    --leading-heading: 1.25;
+    --tracking-body: 0.01em;
+    --tracking-reading: 0.015em;
+    --tracking-heading: 0;
+  }
+
+  :root[data-font="dyslexic"] {
+    --font-display: 'OpenDyslexic', 'Trebuchet MS', sans-serif;
+    --font-body: 'OpenDyslexic', 'Trebuchet MS', sans-serif;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    line-height: var(--leading-body);
+    letter-spacing: var(--tracking-body);
+    font-family: var(--font-ui);
+  }
+
+  :focus-visible {
+    outline: 3px solid hsl(var(--focus));
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-body {
+    font-family: var(--font-body);
+  }
+
+  .font-reading {
+    font-family: var(--font-reading);
+    line-height: var(--leading-reading);
+    letter-spacing: var(--tracking-reading);
+    text-align: left;
+  }
+
+  .font-heading {
+    font-family: var(--font-heading);
+    line-height: var(--leading-heading);
+    letter-spacing: var(--tracking-heading);
+  }
+
+  .font-ui {
+    font-family: var(--font-ui);
+  }
+
+  .reading-width {
+    max-width: 60ch;
+  }
+}
+
+@layer components {
+  .reading-forest {
+    background:
+      radial-gradient(circle at 12% 18%, hsl(45 100% 98% / 0.9), transparent 24%),
+      radial-gradient(circle at 88% 12%, hsl(46 74% 78% / 0.22), transparent 22%),
+      hsl(var(--cream));
+  }
+
+  .forest-glow {
+    position: absolute;
+    width: 10rem;
+    height: 10rem;
+    border-radius: 9999px;
+    background: hsl(46 74% 64% / 0.12);
+    filter: blur(24px);
+    pointer-events: none;
+  }
+
+  .forest-glow-one { top: 12%; left: -4rem; }
+  .forest-glow-two { right: -4rem; bottom: 16%; background: hsl(140 18% 49% / 0.12); }
+
+  .forest-leaf {
+    position: absolute;
+    color: hsl(140 18% 49% / 0.3);
+    font-size: 1.5rem;
+    pointer-events: none;
+  }
+
+  .forest-leaf-one { top: 18%; right: 14%; }
+  .forest-leaf-two { bottom: 22%; left: 10%; font-size: 1rem; }
+
+  .lumi-mascot {
+    position: relative;
+    flex: 0 0 auto;
+    filter: drop-shadow(0 0 10px hsl(46 74% 64% / 0.65));
+    animation: lumi-float 3.5s var(--ease-gentle) infinite;
+  }
+
+  .lumi-body {
+    position: absolute;
+    inset: 15% 18% 12%;
+    border-radius: 48% 48% 45% 45%;
+    background: hsl(46 74% 64%);
+    border: 3px solid hsl(35 45% 35% / 0.22);
+  }
+
+  .lumi-wing {
+    position: absolute;
+    top: 30%;
+    width: 38%;
+    height: 34%;
+    border-radius: 60% 40% 60% 40%;
+    background: hsl(213 72% 80% / 0.72);
+    border: 2px solid hsl(213 45% 48% / 0.2);
+  }
+
+  .lumi-wing-left { left: 0; transform: rotate(-24deg); }
+  .lumi-wing-right { right: 0; transform: scaleX(-1) rotate(-24deg); }
+
+  .lumi-greeting .lumi-wing,
+  .lumi-encouraging .lumi-wing,
+  .lumi-celebrating .lumi-wing {
+    animation: lumi-wing 1.8s var(--ease-gentle) infinite alternate;
+  }
+
+  .lumi-guiding,
+  .lumi-calibration {
+    animation-duration: 1.8s;
+  }
+
+  .lumi-eye {
+    position: absolute;
+    top: 29%;
+    width: 17%;
+    height: 21%;
+    border-radius: 50%;
+    background: hsl(0 0% 23%);
+  }
+
+  .lumi-eye-left { left: 27%; }
+  .lumi-eye-right { right: 27%; }
+
+  .lumi-smile {
+    position: absolute;
+    left: 39%;
+    top: 56%;
+    width: 22%;
+    height: 13%;
+    border-bottom: 2px solid hsl(0 0% 23%);
+    border-radius: 0 0 9999px 9999px;
+  }
+
+  .lumi-celebrating,
+  .lumi-completion,
+  .lumi-encouraging { animation: lumi-celebrate 900ms var(--ease-gentle) 1; }
+  .lumi-guiding,
+  .lumi-calibration { animation: lumi-guide 1.4s var(--ease-gentle) infinite alternate; }
+  .lumi-listening .lumi-body { background: hsl(46 74% 69%); }
+  .lumi-thinking .lumi-body { background: hsl(46 74% 60%); }
+  .lumi-loading .lumi-body { animation: lumi-glow 1.8s var(--ease-gentle) infinite; }
+}
+
+@keyframes lumi-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes lumi-celebrate {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.08) rotate(-3deg); }
+  100% { transform: scale(1); }
+}
+
+@keyframes lumi-guide {
+  from { transform: translateX(-3px); }
+  to { transform: translateX(3px); }
+}
+
+@keyframes lumi-glow {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.12); }
+}
+
+@keyframes lumi-wing {
+  from { translate: 0 0; }
+  to { translate: 0 -2px; }
+}
+
+@keyframes sparkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  25% { transform: scale(1.3) rotate(10deg); opacity: 0.8; }
+  50% { transform: scale(1) rotate(0deg); opacity: 1; }
+  75% { transform: scale(1.3) rotate(-10deg); opacity: 0.8; }
+}
+
+@keyframes gentle-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px hsl(var(--primary) / 0.3); }
+  50% { box-shadow: 0 0 20px hsl(var(--primary) / 0.6); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-6px) rotate(2deg); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
