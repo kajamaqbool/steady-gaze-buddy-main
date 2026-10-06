@@ -13,12 +13,13 @@ export default defineConfig(({ mode }) => ({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:8091',
+        target: 'http://127.0.0.1:8090',
         changeOrigin: true,
       },
       '/ws': {
-        target: 'http://localhost:8091',
+        target: 'http://127.0.0.1:8090',
         ws: true,
+        changeOrigin: true,
       }
     }
   },

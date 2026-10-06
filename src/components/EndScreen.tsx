@@ -1,10 +1,15 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import type { SessionData } from "@/types/gaze";
 import { runFullAnalysis, type FullAnalysis } from "@/lib/featureExtraction";
 import Confetti from "./Confetti";
 import Mascot from "./Mascot";
 import ReadingForestBackground from "./ReadingForestBackground";
 import AdventureReward from "./AdventureReward";
+import MlResultDisplay from "./MlResultDisplay";
+import OralReadingScreen from "./OralReadingScreen";
+import { useGazeStore } from "@/store/gazeStore";
+import { Sparkles } from "lucide-react";
 
 interface EndScreenProps {
   sessionData: SessionData;
@@ -12,8 +17,14 @@ interface EndScreenProps {
 }
 
 const EndScreen = ({ sessionData, onPlayAgain }: EndScreenProps) => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showStage2Modal, setShowStage2Modal] = useState(false);
+  const [stage2Skipped, setStage2Skipped] = useState(false);
+
+  const latestResult = useGazeStore((state) => state.latestResult);
+  const speechResult = useGazeStore((state) => state.speechResult);
 
   const result: FullAnalysis = useMemo(
     () => runFullAnalysis(sessionData.gazePoints, sessionData.duration),
@@ -53,6 +64,26 @@ const EndScreen = ({ sessionData, onPlayAgain }: EndScreenProps) => {
 
   const collected = sessionData.gazePoints.length;
   const lowQuality = collected < 250;
+
+  // Stage 2 is conditionally triggered ONLY if gaze ML classification is MODERATE or HIGH
+  const gazeClassification = latestResult?.classification;
+  const isModerateOrHigh = gazeClassification === "MODERATE" || gazeClassification === "HIGH";
+  const shouldPromptStage2 = isModerateOrHigh && !speechResult && !stage2Skipped;
+
+  if (showStage2Modal) {
+    return (
+      <OralReadingScreen
+        sessionId={useGazeStore.getState().lastEndedSessionId || undefined}
+        language="en"
+        onComplete={() => setShowStage2Modal(false)}
+        onSkip={() => {
+          setStage2Skipped(true);
+          setShowStage2Modal(false);
+        }}
+        onBack={() => setShowStage2Modal(false)}
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -100,29 +131,81 @@ const EndScreen = ({ sessionData, onPlayAgain }: EndScreenProps) => {
       )}
 
       {/* Child-friendly completion summary */}
-      <div className="bg-card rounded-2xl shadow-lg p-5 w-full max-w-sm space-y-3 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-        <p className="text-center text-lg font-bold text-foreground font-display">Adventure complete!</p>
-        <AdventureReward title="Forest Friend badge earned" description="You completed another adventure with Lumi." />
-        <p className="text-center text-sm text-muted-foreground">
+      <div className="bg-card rounded-2xl border border-border/80 shadow-md p-6 w-full max-w-md space-y-4 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+        <p className="text-center text-xl font-extrabold text-foreground font-display">Adventure Complete!</p>
+        <AdventureReward title="Forest Explorer Badge Earned" description="You completed another reading adventure with Lumi!" />
+        <p className="text-center text-xs text-muted-foreground">
           Your reading path has been saved privately on this device.
         </p>
       </div>
 
-      {/* Privacy notice */}
-      <div className="text-xs text-muted-foreground/70 text-center max-w-sm animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-        🔒 Your video stayed on your device. No images were uploaded.
+      {/* Stage 2 Recommendation Prompt Banner (Triggered ONLY when Gaze Classification is MODERATE or HIGH) */}
+      {shouldPromptStage2 && (
+        <div className="w-full max-w-4xl bg-indigo-50/90 border-2 border-indigo-300 rounded-3xl p-6 sm:p-8 text-center space-y-4 shadow-sm animate-fade-in-up">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs">
+            <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
+            One More Quick Check!
+          </div>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-indigo-950 font-display">
+            Stage 2: Read Aloud Assessment Recommended
+          </h2>
+          <p className="text-sm text-indigo-900 max-w-lg mx-auto leading-relaxed font-medium">
+            One more quick check — read this passage aloud to help Lumi complete your full reading assessment.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setShowStage2Modal(true)}
+              className="w-full sm:w-auto px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-md flex items-center justify-center gap-2 min-h-[48px] transition-transform active:scale-95"
+            >
+              <span>🎙️</span>
+              <span>Start Stage 2: Read Aloud</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setStage2Skipped(true)}
+              className="w-full sm:w-auto px-5 py-3.5 text-indigo-800 hover:bg-indigo-100/70 font-semibold rounded-2xl text-sm min-h-[48px]"
+            >
+              Skip Stage 2 (View Gaze Results)
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Backend ML Analysis Results */}
+      <div className="w-full max-w-4xl mt-2 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+        <MlResultDisplay />
       </div>
 
       {/* Actions */}
-      <div className="flex flex-col sm:flex-row gap-3 mt-2 pb-8 animate-fade-in-up w-full max-w-md" style={{ animationDelay: "0.3s" }}>
-        <button onClick={onPlayAgain} className="flex-1 px-5 py-3 bg-primary text-primary-foreground rounded-2xl text-base sm:text-lg font-bold shadow-lg hover:scale-105 transition-all duration-300 min-h-[48px]">
-          🔄 {lowQuality ? "Try Again" : "Play Again"}
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3 mt-4 pb-8 animate-fade-in-up w-full max-w-xl" style={{ animationDelay: "0.3s" }}>
+        {!speechResult && (
+          <button
+            type="button"
+            onClick={() => setShowStage2Modal(true)}
+            className="flex-1 px-5 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-base font-bold shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200 min-h-[48px] flex items-center justify-center gap-2"
+          >
+            <span>🎙️</span>
+            <span>Stage 2: Oral Reading</span>
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={onPlayAgain}
+          className="flex-1 px-5 py-3.5 bg-primary text-primary-foreground rounded-xl text-base font-bold shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200 min-h-[48px] flex items-center justify-center gap-2"
+        >
+          <span>🔄</span>
+          <span>{lowQuality ? "Try Again" : "Play Again"}</span>
         </button>
-        <button onClick={handleExportAnalysis} className="flex-1 px-5 py-3 bg-secondary text-secondary-foreground rounded-2xl text-base sm:text-lg font-bold shadow-lg hover:scale-105 transition-all duration-300 min-h-[48px]">
-          📊 Grown-up Results
-        </button>
-        <button onClick={handleExportRaw} className="flex-1 px-5 py-3 bg-muted text-muted-foreground rounded-2xl text-base sm:text-lg font-bold shadow-lg hover:scale-105 transition-all duration-300 min-h-[48px]">
-          📥 Raw Data
+
+        <button
+          type="button"
+          onClick={handleExportAnalysis}
+          className="flex-1 px-5 py-3.5 bg-secondary text-secondary-foreground rounded-xl text-base font-bold shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200 min-h-[48px] flex items-center justify-center gap-2"
+        >
+          <span>📊</span>
+          <span>Export Summary</span>
         </button>
       </div>
 

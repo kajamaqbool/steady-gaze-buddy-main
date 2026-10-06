@@ -1,8 +1,29 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { authService, getStoredTokens, onTokenUpdate } from '../api/authService';
-import { LoginRequest, RegisterRequest } from '../api/types';
+import { LoginRequest, RegisterRequest, AuthTokens, RegisterResponse } from '../api/types';
 import { stompClient } from '../api/wsClient';
 
+/**
+ * Strict mapping from user role to primary dashboard URL.
+ * Returns null if role is missing or unrecognized (NO fallback to STUDENT).
+ */
+export function getDashboardForRole(role: string | null | undefined): string | null {
+  if (!role) {
+    return null;
+  }
+  const norm = role.trim().toUpperCase();
+  switch (norm) {
+    case 'PARENT':
+      return '/parent/dashboard';
+    case 'TEACHER':
+      return '/teacher/dashboard';
+    case 'STUDENT':
+      return '/student/dashboard';
+    default:
+      console.warn(`[getDashboardForRole] Unrecognized role: '${role}'`);
+      return null;
+  }
+}
 
 interface AuthState {
   accessToken: string | null;
@@ -12,11 +33,12 @@ interface AuthState {
 }
 
 interface AuthContextType extends AuthState {
-  login: (request: LoginRequest) => Promise<void>;
-  register: (request: RegisterRequest) => Promise<void>;
+  login: (request: LoginRequest) => Promise<AuthTokens>;
+  register: (request: RegisterRequest) => Promise<RegisterResponse>;
   logout: () => void;
-  refreshAuthToken: () => Promise<void>;
+  refreshAuthToken: () => Promise<AuthTokens>;
   isAuthenticated: () => boolean;
+  getRoleDashboard: () => string | null;
   isLoading: boolean;
 }
 
@@ -35,10 +57,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const tokens = getStoredTokens();
     if (tokens) {
+      const normRole = tokens.role ? tokens.role.trim().toUpperCase() : null;
       setAuthState({
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
-        role: tokens.role,
+        role: normRole,
         expiresAt: tokens.expiresAt,
       });
     }
@@ -47,10 +70,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Subscribe to external token updates (like axios refresh interceptor)
     const unsubscribe = onTokenUpdate((newTokens) => {
       if (newTokens) {
+        const normRole = newTokens.role ? newTokens.role.trim().toUpperCase() : null;
         setAuthState({
           accessToken: newTokens.accessToken,
           refreshToken: newTokens.refreshToken,
-          role: newTokens.role,
+          role: normRole,
           expiresAt: newTokens.expiresAt,
         });
       } else {
@@ -66,19 +90,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return unsubscribe;
   }, []);
 
-  const login = async (request: LoginRequest) => {
+  const login = async (request: LoginRequest): Promise<AuthTokens> => {
     const tokens = await authService.login(request);
+    const normalizedRole = tokens.role ? tokens.role.trim().toUpperCase() : null;
+    const tokensWithNormRole: AuthTokens = {
+      ...tokens,
+      role: normalizedRole || tokens.role,
+    };
+
     setAuthState({
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
-      role: tokens.role,
+      role: normalizedRole,
       expiresAt: tokens.expiresAt,
     });
+
+    return tokensWithNormRole;
   };
 
-  const register = async (request: RegisterRequest) => {
-    await authService.register(request);
-    // Forced login flow: do not auto-login after registration
+  const register = async (request: RegisterRequest): Promise<RegisterResponse> => {
+    return await authService.register(request);
   };
 
   const logout = useCallback(() => {
@@ -91,19 +122,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.warn("Error disconnecting websocket on logout", e);
     }
     
-    // Using window.location.href to fully reset app state and redirect
+    // Reset app state and redirect to login
     window.location.href = '/login';
   }, []);
 
-  const refreshAuthToken = async () => {
+  const refreshAuthToken = async (): Promise<AuthTokens> => {
     try {
       const newTokens = await authService.refreshToken();
+      const normalizedRole = newTokens.role ? newTokens.role.trim().toUpperCase() : authState.role;
+      const updatedTokens: AuthTokens = {
+        ...newTokens,
+        role: normalizedRole || newTokens.role,
+      };
+
       setAuthState({
         accessToken: newTokens.accessToken,
         refreshToken: newTokens.refreshToken,
-        role: newTokens.role,
+        role: normalizedRole,
         expiresAt: newTokens.expiresAt,
       });
+
+      return updatedTokens;
     } catch (error) {
       logout();
       throw error;
@@ -115,13 +154,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return Date.now() < authState.expiresAt;
   };
 
-  // Provide global access to logout for wsClient or axios interceptors if needed
   useEffect(() => {
     (window as any).__logout = logout;
   }, [logout]);
 
+  const getRoleDashboard = () => getDashboardForRole(authState.role);
+
   return (
-    <AuthContext.Provider value={{ ...authState, login, register, logout, refreshAuthToken, isAuthenticated, isLoading }}>
+    <AuthContext.Provider value={{ ...authState, login, register, logout, refreshAuthToken, isAuthenticated, getRoleDashboard, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

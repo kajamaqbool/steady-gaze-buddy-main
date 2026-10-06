@@ -108,6 +108,9 @@ export const createAuthAxios = (): AxiosInstance => {
   const instance = axios.create({
     baseURL: API_BASE_URL,
     timeout: 10000,
+    headers: {
+      'Content-Type': 'application/json',
+    },
   });
 
   // Request interceptor: attach Authorization header
@@ -139,7 +142,8 @@ export const createAuthAxios = (): AxiosInstance => {
             const refreshPayload: RefreshRequest = { refreshToken: tokens.refreshToken };
             const response = await axios.post<RefreshResponse>(
               `${API_BASE_URL}/api/auth/refresh`,
-              refreshPayload
+              refreshPayload,
+              { headers: { 'Content-Type': 'application/json' } }
             );
 
             if (response.data.accessToken) {
@@ -176,7 +180,8 @@ export const authService = {
     try {
       const response = await axios.post<LoginResponse>(
         `${API_BASE_URL}/api/auth/login`,
-        request
+        request,
+        { headers: { 'Content-Type': 'application/json' } }
       );
 
       const tokens: AuthTokens = {
@@ -198,7 +203,8 @@ export const authService = {
     try {
       const response = await axios.post<RegisterResponse>(
         `${API_BASE_URL}/api/auth/register`,
-        request
+        request,
+        { headers: { 'Content-Type': 'application/json' } }
       );
       return response.data;
     } catch (error) {
@@ -221,7 +227,8 @@ export const authService = {
       const refreshPayload: RefreshRequest = { refreshToken: tokens.refreshToken };
       const response = await axios.post<RefreshResponse>(
         `${API_BASE_URL}/api/auth/refresh`,
-        refreshPayload
+        refreshPayload,
+        { headers: { 'Content-Type': 'application/json' } }
       );
 
       const newTokens: AuthTokens = {

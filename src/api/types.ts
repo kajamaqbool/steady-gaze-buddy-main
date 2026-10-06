@@ -24,6 +24,7 @@ export interface RegisterRequest {
   password: string;
   dateOfBirth: string;
   gender: 'M' | 'F' | 'O';
+  role?: 'STUDENT' | 'PARENT' | 'TEACHER';
 }
 
 export interface RegisterResponse {
@@ -194,3 +195,79 @@ export interface DebugMetrics {
   lastReconnectTime: number;
   uptime: number;
 }
+
+// ============ LINK & DASHBOARD DTO TYPES ============
+
+export interface LinkCodeRequest {
+  type: 'PARENT' | 'TEACHER';
+}
+
+export interface LinkCodeResponse {
+  code: string;
+  type: 'PARENT' | 'TEACHER';
+  expiresAt?: string | number;
+  message?: string;
+}
+
+export interface LinkChildRequest {
+  code: string;
+}
+
+export interface LinkStudentRequest {
+  code: string;
+}
+
+export interface StudentDashboardResponse {
+  welcomeMessage?: string;
+  readingProgress?: number;
+  learningPlan?: StudentLearningPlan;
+  recentSessions?: StudentSession[];
+  latestScreeningResult?: MLResultPayload | null;
+  achievements?: Array<{ id: string; title: string; description: string; icon?: string; unlockedAt?: number }>;
+  nextActivity?: { id: string; title: string; type: string; estimatedMinutes?: number };
+  [key: string]: any;
+}
+
+export interface ParentDashboardResponse {
+  totalChildren?: number;
+  activeChildren?: number;
+  recentSessions?: StudentSession[];
+  latestScreeningIndicators?: MLResultPayload[];
+  progressOverview?: { totalSessions?: number; avgRiskScore?: number; activePlanCount?: number; [key: string]: any };
+  children?: ChildProfile[];
+  recentActivity?: Array<{ id: string; studentName?: string; action?: string; timestamp?: number; [key: string]: any }>;
+  [key: string]: any;
+}
+
+export interface TeacherDashboardResponse {
+  totalStudents?: number;
+  activeStudents?: number;
+  recentSessions?: StudentSession[];
+  progressOverview?: { classAvgRiskScore?: number; totalSessionsThisWeek?: number; [key: string]: any };
+  students?: StudentRosterItem[];
+  latestScreeningIndicators?: MLResultPayload[];
+  [key: string]: any;
+}
+
+// ============ SPEECH / ORAL READING ANALYSIS DTO ============
+
+export interface SpeechAnalysisResponse {
+  sessionId?: string;
+  language?: string;
+  transcript?: string;
+  totalWords: number;
+  correctWords: number;
+  substitutions: number;
+  omissions: number;
+  insertions: number;
+  accuracy: number;
+  wcpm: number;
+  avgPauseSeconds?: number;
+  speechRiskScore?: number;
+  gazeScoreUsed?: number | null;
+  combinedRiskScore?: number;
+  classification?: 'LOW' | 'MODERATE' | 'HIGH';
+  [key: string]: any;
+}
+
+

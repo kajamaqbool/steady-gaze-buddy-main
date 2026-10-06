@@ -11,7 +11,10 @@
 
 import { stompClient } from './wsClient';
 import { useGazeStore } from '../store/gazeStore';
-import { SessionStartPayload, SessionEndPayload } from './types';
+import { SessionStartPayload, SessionEndPayload, MLResultPayload } from './types';
+import { fetchSessionResult, SessionResultError } from '../lib/api/session';
+
+export { fetchSessionResult, SessionResultError };
 
 export class SessionManager {
   /**
@@ -75,7 +78,7 @@ export class SessionManager {
   /**
    * End the current gaze tracking session
    */
-  static async endSession(): Promise<void> {
+  static async endSession(): Promise<string | null> {
     console.log('[SessionManager] 🛑 Ending session');
     
     if (!stompClient.isConnected()) {
@@ -85,7 +88,7 @@ export class SessionManager {
     const session = useGazeStore.getState().endSession();
     if (!session) {
       console.warn('[SessionManager] ⚠️ No active session to end');
-      return;
+      return null;
     }
 
     const metrics = useGazeStore.getState().metrics;
@@ -114,7 +117,14 @@ export class SessionManager {
         console.error('[SessionManager] ❌ Failed to send session end:', error);
       }
     }
+
+    return session.sessionId;
   }
+
+  /**
+   * Fetch session result via REST API fallback
+   */
+  static fetchSessionResult = fetchSessionResult;
 
   /**
    * Get current session ID

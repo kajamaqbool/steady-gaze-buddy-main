@@ -15,8 +15,7 @@ export const AuthGuard: React.FC = () => {
   }
 
   if (!isAuthenticated()) {
-    // Redirect to register for new users (saves the attempted url)
-    return <Navigate to="/register" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return <Outlet />;

@@ -21,6 +21,8 @@ interface GazeStore {
 
   // Session state
   session: SessionState | null;
+  lastEndedSessionId: string | null;
+  setLastEndedSessionId: (id: string | null) => void;
   startSession: (taskId: string, metadata?: Record<string, any>) => void;
   endSession: () => SessionState | null;
   isSessionActive: () => boolean;
@@ -35,8 +37,10 @@ interface GazeStore {
 
   // ML Results
   latestResult: MLResultPayload | null;
+  speechResult: SpeechAnalysisResponse | null;
   resultHistory: MLResultPayload[];
   setLatestResult: (result: MLResultPayload) => void;
+  setSpeechResult: (result: SpeechAnalysisResponse | null) => void;
   clearResultHistory: () => void;
 
   // Debug metrics
@@ -99,10 +103,13 @@ export const useGazeStore = create<GazeStore>((set, get) => {
 
     // Session state
     session: null,
+    lastEndedSessionId: null,
+    setLastEndedSessionId: (id: string | null) => set({ lastEndedSessionId: id }),
     startSession: (taskId: string, metadata?: Record<string, any>) => {
       const newSession = createInitialSession(taskId, metadata);
       set({
         session: newSession,
+        lastEndedSessionId: null,
         metrics: createInitialMetrics(),
         debug: createInitialDebugMetrics(),
       });
@@ -111,7 +118,7 @@ export const useGazeStore = create<GazeStore>((set, get) => {
     endSession: () => {
       const current = get().session;
       if (current) {
-        set({ session: null });
+        set({ session: null, lastEndedSessionId: current.sessionId });
       }
       return current || null;
     },
@@ -183,6 +190,7 @@ export const useGazeStore = create<GazeStore>((set, get) => {
 
     // ML Results
     latestResult: null,
+    speechResult: null,
     resultHistory: [],
 
     setLatestResult: (result: MLResultPayload) =>
@@ -195,9 +203,13 @@ export const useGazeStore = create<GazeStore>((set, get) => {
         };
       }),
 
+    setSpeechResult: (result: SpeechAnalysisResponse | null) =>
+      set({ speechResult: result }),
+
     clearResultHistory: () =>
       set({
         latestResult: null,
+        speechResult: null,
         resultHistory: [],
       }),
 
@@ -223,6 +235,7 @@ export const useGazeStore = create<GazeStore>((set, get) => {
         session: null,
         metrics: createInitialMetrics(),
         latestResult: null,
+        speechResult: null,
         resultHistory: [],
         debug: createInitialDebugMetrics(),
       });

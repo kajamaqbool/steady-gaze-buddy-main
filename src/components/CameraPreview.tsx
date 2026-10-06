@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { Camera, CameraOff, Lock, Eye } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CameraPreviewProps {
   videoElement?: HTMLVideoElement | null;
@@ -8,6 +10,7 @@ interface CameraPreviewProps {
 const CameraPreview = ({ videoElement, faceDetected = false }: CameraPreviewProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hasVideo, setHasVideo] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
 
   useEffect(() => {
     if (!videoElement || !canvasRef.current) return;
@@ -43,24 +46,83 @@ const CameraPreview = ({ videoElement, faceDetected = false }: CameraPreviewProp
     return () => cancelAnimationFrame(animId);
   }, [videoElement]);
 
-  const borderColor = faceDetected ? "border-success" : "border-primary";
+  const borderColor = faceDetected ? "border-emerald-500" : "border-amber-400";
 
   return (
-    <div
-      className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-4 ${borderColor} transition-colors duration-300`}
-      style={{ boxShadow: faceDetected ? "0 0 12px hsl(var(--success) / 0.5)" : "0 0 12px hsl(var(--primary) / 0.35)" }}
-    >
-      {!hasVideo ? (
-        <div className="w-full h-full flex items-center justify-center bg-muted text-xs text-center text-muted-foreground p-1">
-          ✨ Lumi is nearby...
-        </div>
-      ) : null}
-      <canvas ref={canvasRef} className="w-full h-full object-cover" style={{ display: hasVideo ? "block" : "none" }} />
-      {hasVideo && (
-        <div className={`absolute top-1 right-1 w-2 h-2 rounded-full ${faceDetected ? "bg-success" : "bg-primary"} animate-pulse`} />
-      )}
+    <div className="relative inline-flex items-center gap-2">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="relative group">
+            {isMinimized ? (
+              <button
+                type="button"
+                onClick={() => setIsMinimized(false)}
+                className="w-10 h-10 rounded-full bg-card border-2 border-primary/40 flex items-center justify-center shadow-sm hover:scale-105 transition-all text-primary"
+                title="Expand camera preview"
+              >
+                <Eye className="w-5 h-5" />
+                <span className={`absolute top-0 right-0 w-2.5 h-2.5 rounded-full ${faceDetected ? 'bg-emerald-500' : 'bg-amber-400'} animate-pulse`} />
+              </button>
+            ) : (
+              <div
+                className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-3 ${borderColor} transition-all duration-300 shadow-sm`}
+                style={{
+                  boxShadow: faceDetected
+                    ? "0 0 10px rgba(16, 185, 129, 0.4)"
+                    : "0 0 8px rgba(245, 158, 11, 0.3)",
+                }}
+              >
+                {!hasVideo ? (
+                  <div className="w-full h-full flex items-center justify-center bg-slate-100 text-[10px] text-center text-slate-500 p-1 font-medium">
+                    🔍 Finding face...
+                  </div>
+                ) : null}
+                
+                <canvas
+                  ref={canvasRef}
+                  className="w-full h-full object-cover"
+                  style={{ display: hasVideo ? "block" : "none" }}
+                />
+
+                {/* Status Dot */}
+                {hasVideo && (
+                  <div
+                    className={`absolute top-1 right-1 w-2.5 h-2.5 rounded-full ${
+                      faceDetected ? "bg-emerald-500" : "bg-amber-400"
+                    } animate-pulse border border-white`}
+                  />
+                )}
+
+                {/* Minimize Button overlay */}
+                <button
+                  type="button"
+                  onClick={() => setIsMinimized(true)}
+                  className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold"
+                  title="Minimize preview"
+                >
+                  Hide
+                </button>
+              </div>
+            )}
+          </div>
+        </TooltipTrigger>
+
+        <TooltipContent side="bottom" className="text-xs bg-slate-900 text-slate-100 p-2 max-w-xs space-y-1">
+          <div className="flex items-center gap-1.5 font-semibold text-emerald-400">
+            <Lock className="w-3.5 h-3.5" />
+            Local Device Processing
+          </div>
+          <p className="text-slate-300">
+            {faceDetected
+              ? "✅ Face detected & gaze tracking active."
+              : "⏳ Align face inside camera preview."}
+            No video streams or images leave your browser.
+          </p>
+        </TooltipContent>
+      </Tooltip>
     </div>
   );
 };
 
 export default CameraPreview;
+

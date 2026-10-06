@@ -24,7 +24,7 @@ interface SteadyReaderGameProps {
 
 const TARGET_POINTS = 300;
 const CAPTURE_INTERVAL = 200;
-const STORY_TEXT = "Once upon a time, in a small village, lived a curious boy named Raj. He loved exploring the forest near his home. One sunny day, Raj found a mysterious golden key hidden under an old oak tree. The key sparkled in the sunlight and felt warm in his hand. Raj wondered what door it could open. He decided to search for the lock that matched this special key. His adventure was just beginning, and he felt excited about the mysteries that awaited him in the forest. The birds sang cheerful songs as Raj walked deeper into the woods. He noticed colorful flowers and tall mushrooms along the path.";
+const STORY_TEXT = "Riya loved spending time in the small garden behind her house. Every morning, she watered the plants before going to school. One day, she noticed a tiny green bird sitting on a branch. The bird looked tired and could not fly away. Riya quietly brought a small bowl of water and placed it near the tree. After drinking the water, the bird moved its wings and jumped from one branch to another. Riya watched it carefully and smiled. The next morning, the bird returned to the garden. It sang a soft song while Riya watered the flowers. She began to visit the garden every day. Soon, she noticed that more birds were coming to the trees. Riya learned that even a small act of kindness could make a difference.";
 const STORY_WORDS = STORY_TEXT.split(" ");
 const FOREST_ADVENTURE: AdventureConfig = {
   id: "forest-adventure",
